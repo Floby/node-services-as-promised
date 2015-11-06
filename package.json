@@ -3,6 +3,16 @@
   "version": "1.0.0",
   "description": "A DI container using promises",
   "main": "index.js",
+  "keywords": [
+    "dependency",
+    "injection",
+    "DI",
+    "dependency injection",
+    "dependencies",
+    "services",
+    "service",
+    "spring"
+  ],
   "scripts": {
     "test": "istanbul cover --print detail _mocha -- -R spec test",
     "coveralls": "cat coverage/lcov.info | coveralls"
