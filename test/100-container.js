@@ -40,6 +40,14 @@ describe('Container', function () {
         mockA.verify();
       });
 
+      describe('when the module does not exist', function () {
+        it('rejects the promise', function (done) {
+          expectReject(container.with('i-dont-exist'), (err) => {
+            expect(err).to.be.an.instanceof(Error);
+          }).then(done, done)
+        })
+      })
+
       describe('when .register(container) does not return a promise', function () {
         beforeEach(() => mockA.expects('register').returns({}))
 
@@ -50,6 +58,7 @@ describe('Container', function () {
           }).then(done, done);
         })
       })
+
 
       describe('when .register(container) returns a promise', function () {
         let error = Error('my error');
