@@ -86,6 +86,43 @@ describe('Container', function () {
         })
       })
     })
+
+    describe('.with(A, B)', function () {
+      let mockA;
+      beforeEach(() => mockA = sinon.mock(A) )
+      afterEach(() => mockA.restore() )
+      let mockB;
+      beforeEach(() => mockB = sinon.mock(B) )
+      afterEach(() => mockB.restore() )
+
+      describe('if both services exist', function () {
+        let A = {}, B = {};
+        beforeEach(() => mockA.expects('register').once().returns(Promise.resolve(A)))
+        beforeEach(() => mockB.expects('register').once().returns(Promise.resolve(B)))
+
+        it('resolves to an array of services', function (done) {
+          container.with('A', 'B')
+          .then((actual) => {
+            expect(actual[0]).to.equal(A)
+            expect(actual[1]).to.equal(B)
+            done();
+          })
+          .catch(done)
+        });
+      });
+
+      describe('if at least one fails', function () {
+        let A = {}, B = Error('hey!');
+        beforeEach(() => mockA.expects('register').once().returns(Promise.resolve(A)))
+        beforeEach(() => mockB.expects('register').once().returns(Promise.reject(B)))
+
+        it('rejects the promise altogether', function () {
+          expectReject(container.with('A', 'B'), (err) => {
+            expect(err).to.equal(B);
+          })
+        })
+      })
+    })
   })
 });
 
