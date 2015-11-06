@@ -12,7 +12,7 @@ describe('ServicesAsPromised', function () {
     })
 
     it('is a constructor', function () {
-      var c = new m.Container();
+      var c = new m.Container('/');
       expect(c).to.be.an.instanceof(m.Container);
     })
   })
