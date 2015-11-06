@@ -19,7 +19,7 @@ Usage
 var Container = require('services-as-promised').Container;
 var services = new Container('/path/to/services/directory');
 
-services.with('db', 'api/google').then((db, google) => {
+services.with('db', 'api/google').then(([db, google]) => {
   google.search('something').then(result => db.insert(result));
 })
 ```
@@ -39,8 +39,8 @@ exports.register = (container) => new Promise((resolve, reject) {
 ```
 The sync example would be a shame to even detail here.
 
-Bottom-line, the register function return a promise which
-resolves to the service singleton.
+Bottom-line, the register function returns a promise which
+resolves to your service singleton.
 
 ### As connect/express middleware
 
