@@ -1,5 +1,7 @@
 "use strict"
+
 var expect = require('chai').expect;
+require('chai').use(require('sinon-chai'));
 var Container = require('../lib/container');
 var sinon = require('sinon');
 var path = require('path');
@@ -138,6 +140,79 @@ describe('Container', function () {
         })
       })
     })
+
+
+    describe('.using("A", "B")', function () {
+      let mockContainer, req, res, next;
+      beforeEach(() => mockContainer = sinon.mock(container));
+      afterEach(() => mockContainer.restore())
+      beforeEach(() => {
+        req = {};
+        res = {};
+        next = sinon.spy();
+      })
+
+      it('returns a middleware', function () {
+        let middleware = container.using('A', 'B');
+        expect(container.using('A', 'B')).to.be.a('function');
+        expect(container.using('A', 'B').toString()).to.match(/\(req, ?res, ?next\)/)
+      })
+
+      describe('(req, res, next)', function () {
+        describe('if service lookup fails', function () {
+          it('calls next with the error', function (done) {
+            let error = Error('hey');
+            let promise = Promise.reject(error)
+            mockContainer.expects('resolve').withArgs('A').returns(promise);
+            container.using('A')(req, res, next);
+            expectReject(promise, function () {
+              expect(next).to.have.been.called
+              expect(next).to.have.been.calledWith(error);
+            }).then(done, done)
+          });
+        })
+
+        describe('if all services succeed', function () {
+          let A = {}, B = {};
+          beforeEach(() => {
+            mockContainer.expects('resolve').withArgs('A').returns(Promise.resolve(A))
+            mockContainer.expects('resolve').withArgs('B').returns(Promise.resolve(B))
+          })
+
+          it('populates the request with a "service" object', function (done) {
+            container.using('A', 'B')(req, res, function(err) {
+              try {
+                expect(err).not.to.be.ok;
+                expect(req).to.have.property('services');
+                expect(req.services.A).to.equal(A);
+                expect(req.services.B).to.equal(B);
+                done();
+              } catch(e) {
+                done(e);
+              }
+            });
+          });
+
+          it('keeps other previously set services and overrides same names', function (done) {
+            let previous = {}, myB = 'myB';
+            req.services = {previous, B: myB};
+            container.using('B')(req, res, function (err) {
+              try {
+                expect(err).not.to.be.ok;
+                console.log('req', req)
+                expect(req).to.have.property('services');
+                expect(req.services).to.have.property('previous')
+                expect(req.services.previous).to.equal(previous);
+                expect(req.services.B).to.equal(B);
+                done();
+              } catch(e) {
+                done(e);
+              }
+            })
+          })
+        })
+      })
+    });
   })
 });
 
