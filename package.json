@@ -1,0 +1,11 @@
+{
+  "name": "services-as-promised",
+  "version": "1.0.0",
+  "description": "A DI container using promises",
+  "main": "index.js",
+  "scripts": {
+    "test": "istanbul cover --print detail _mocha -- -R spec test"
+  },
+  "author": "Florent Jaby <florent.jaby@octo.com>",
+  "license": "MIT"
+}
