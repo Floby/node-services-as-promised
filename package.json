@@ -4,12 +4,14 @@
   "description": "A DI container using promises",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover --print detail _mocha -- -R spec test"
+    "test": "istanbul cover --print detail _mocha -- -R spec test",
+    "coveralls": "cat coverage/lcov.info | coveralls"
   },
   "author": "Florent Jaby <florent.jaby@octo.com>",
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.4.0",
+    "coveralls": "^2.11.4",
     "istanbul": "^0.4.0",
     "mocha": "^2.3.3",
     "sinon": "^1.17.2"
