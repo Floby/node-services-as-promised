@@ -199,7 +199,6 @@ describe('Container', function () {
             container.using('B')(req, res, function (err) {
               try {
                 expect(err).not.to.be.ok;
-                console.log('req', req)
                 expect(req).to.have.property('services');
                 expect(req.services).to.have.property('previous')
                 expect(req.services.previous).to.equal(previous);
