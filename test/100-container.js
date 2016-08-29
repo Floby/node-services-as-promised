@@ -15,12 +15,6 @@ describe('Container', function () {
     });
   });
 
-  describe('new Container("some/relative/path")', function () {
-    it('throws', function () {
-      expect(() => new Container('./heyyyy')).to.throw(/must be absolute/);
-    })
-  })
-
   describe('new Container("/absolute/path")', function () {
     let container;
     beforeEach(() => {
