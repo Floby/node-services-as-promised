@@ -1,6 +1,6 @@
 {
   "name": "services-as-promised",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A DI container using promises",
   "main": "index.js",
   "keywords": [
