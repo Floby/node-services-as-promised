@@ -32,32 +32,25 @@ describe('Container', function () {
       beforeEach(() => mockA = sinon.mock(A) )
       afterEach(() => mockA.restore() )
 
-      it('returns a Promise', function () {
-        expect(container.with('A')).to.be.an.instanceof(Promise);
-      })
-
-      it('calls .register(this) on the module at /absolute/path/A', function () {
+      it('calls .register(this) on the module at /absolute/path/A', async function () {
         mockA.expects('register').withArgs(container);
-        container.with('A');
+        await container.with('A').catch(() => {})
         mockA.verify();
       });
 
       describe('when the module does not exist', function () {
-        it('rejects the promise', function (done) {
-          expectReject(container.with('i-dont-exist'), (err) => {
-            expect(err).to.be.an.instanceof(Error);
-          }).then(done, done)
+        it('rejects the promise', function () {
+          return expect(container.with('i-dont-exist'))
+            .to.eventually.be.rejectedWith(Error)
         })
       })
 
       describe('when .register(container) does not return a promise', function () {
         beforeEach(() => mockA.expects('register').returns({}))
 
-        it('rejects its promise', function (done) {
-          expectReject(container.with('A'), (err) => {
-            expect(err).to.be.an.instanceof(Error);
-            expect(err).to.be.match(/should return a promise/);
-          }).then(done, done);
+        it('rejects its promise', function () {
+          return expect(container.with('A'))
+            .to.eventually.be.rejectedWith(Error, /should return a promise/)
         })
       })
 
@@ -68,21 +61,18 @@ describe('Container', function () {
         describe('that fails', function () {
           beforeEach(() => mockA.expects('register').returns(Promise.reject(error)));
 
-          it('rejects its promise', function (done) {
-            expectReject(container.with('A'), (err) => {
-              expect(err).to.equal(error);
-            }).then(done, done)
+          it('rejects its promise', function () {
+            return expect(container.with('A'))
+              .to.eventually.be.rejectedWith(error)
           });
         })
 
         describe('that succeeds', function () {
           beforeEach(() => mockA.expects('register').returns(Promise.resolve(service)));
 
-          it('resolves the service', function (done) {
-            container.with('A')
-              .then(actual => {
-                expect(actual).to.equal(service);
-              }).then(done, done)
+          it('resolves the service', function () {
+            return expect(container.with('A'))
+              .to.eventually.equal(service)
           })
         })
       })
@@ -90,16 +80,12 @@ describe('Container', function () {
       describe('called twice', function () {
         let service = {}
         beforeEach(() => mockA.expects('register').once().returns(Promise.resolve(service)));
-        beforeEach(done => container.with('A').then(() => done(), done));
+        beforeEach(() => container.with('A'));
 
-        it('only calls .register(container) once', function (done) {
-          container.with('A')
-            .then(actual => {
-              expect(actual).to.equal(service);
-              mockA.verify();
-              done()
-            })
-            .catch(done)
+        it('only calls .register(container) once', function () {
+          return expect(container.with('A'))
+            .to.eventually.equal(service)
+            .then(() => mockA.verify())
         })
       })
     })
@@ -117,14 +103,10 @@ describe('Container', function () {
         beforeEach(() => mockA.expects('register').once().returns(Promise.resolve(A)))
         beforeEach(() => mockB.expects('register').once().returns(Promise.resolve(B)))
 
-        it('resolves to an array of services', function (done) {
-          container.with('A', 'B')
-          .then((actual) => {
-            expect(actual[0]).to.equal(A)
-            expect(actual[1]).to.equal(B)
-            done();
-          })
-          .catch(done)
+        it('resolves to an array of services', async function () {
+          const [ resA, resB ] = await container.with('A', 'B')
+          expect(resA).to.equal(A)
+          expect(resB).to.equal(B)
         });
       });
 
@@ -160,15 +142,14 @@ describe('Container', function () {
 
       describe('(req, res, next)', function () {
         describe('if service lookup fails', function () {
-          it('calls next with the error', function (done) {
+          it('calls next with the error', function () {
             let error = Error('hey');
             let promise = Promise.reject(error)
             mockContainer.expects('resolve').withArgs('A').returns(promise);
             container.using('A')(req, res, next);
-            expectReject(promise, function () {
-              expect(next).to.have.been.called
-              expect(next).to.have.been.calledWith(error);
-            }).then(done, done)
+            return expect(promise).to.eventually.be.rejected
+              .then(() => expect(next).to.have.been.calledOnce)
+              .then(() => expect(next).to.have.been.calledWith(error))
           });
         })
 
